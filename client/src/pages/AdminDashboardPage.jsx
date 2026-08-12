@@ -146,7 +146,7 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="bg-[#fdfbf7] min-h-screen flex">
+    <div className="bg-[#fdfbf7] h-[100dvh] flex overflow-hidden">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div

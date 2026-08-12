@@ -162,7 +162,7 @@ export default function PortalPage() {
           onSignInClick={() => portalGridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
         />
 
-        <main className="flex-grow pt-24 pb-12 px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto flex flex-col items-center justify-center w-full min-h-screen">
+        <main className="flex-grow pt-24 pb-12 px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto flex flex-col items-center justify-center w-full">
           {/* Hero Section */}
           <section className="text-center mb-8 md:mb-12 animate-fade-in-up">
             <h1

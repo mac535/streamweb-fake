@@ -44,7 +44,7 @@ export default function DashboardLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-[100dvh] bg-background flex overflow-hidden">
       {/* Sidebar Overlay (Mobile) */}
       {sidebarOpen && (
         <div
@@ -121,7 +121,7 @@ export default function DashboardLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-h-screen lg:pl-[280px]">
+      <div className="flex-1 flex flex-col h-full overflow-y-auto lg:pl-[280px]">
         <NotificationBar />
         
         {/* Top Bar */}

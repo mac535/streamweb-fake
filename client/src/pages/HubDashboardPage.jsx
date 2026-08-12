@@ -79,7 +79,7 @@ export default function HubDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fdfbf7] flex">
+    <div className="h-[100dvh] bg-[#fdfbf7] flex overflow-hidden">
       {/* Sidebar */}
       <aside className="hidden md:flex flex-col w-72 bg-white border-r border-on-surface/10 shrink-0 sticky top-0 h-screen">
         <div className="p-6 border-b border-on-surface/10">
