@@ -29,6 +29,28 @@ exports.createEvent = (req, res) => {
   try {
     const { brcCode, venueType, venueValue, name, date, description, teachersCount, studentsCount, status, latitude, longitude, locationTimestamp, tag, customTag } = req.body;
     
+    const events = readEvents();
+
+    const isDraft = status === 'DRAFT' || !status;
+    if (isDraft) {
+      const now = Date.now();
+      const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+      let validDrafts = 0;
+      
+      for (const e of events) {
+         if (e.createdBy === req.user.id && e.status === 'DRAFT') {
+            const age = now - new Date(e.createdAt).getTime();
+            if (age <= TWENTY_FOUR_HOURS) {
+               validDrafts++;
+            }
+         }
+      }
+      
+      if (validDrafts > 0) {
+         return res.status(400).json({ message: 'You already have an active draft in the app. Please submit or delete it first.' });
+      }
+    }
+
     // Process uploaded photos
     const photos = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
 
@@ -54,7 +76,6 @@ exports.createEvent = (req, res) => {
       creatorRole: req.user.role || 'UNKNOWN'
     };
 
-    const events = readEvents();
     events.push(newEvent);
     writeEvents(events);
 
@@ -151,20 +172,20 @@ exports.deleteEvent = (req, res) => {
 exports.getDrafts = (req, res) => {
   try {
     const { brcCode } = req.query;
-    if (!brcCode) {
-      return res.status(400).json({ message: 'brcCode is required' });
-    }
 
     const now = Date.now();
     const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
-    // Return only DRAFT events for this specific BRC created by this user
+    // Return only DRAFT events created by this user
     // Filter out drafts older than 24 hours
     const allEvents = readEvents();
     let eventsChanged = false;
 
     const drafts = allEvents.filter(e => {
-      if (e.brcCode === brcCode && e.status === 'DRAFT' && e.createdBy === req.user.id) {
+      if (e.status === 'DRAFT' && e.createdBy === req.user.id) {
+        if (brcCode && e.brcCode !== brcCode) {
+          return false;
+        }
         const age = now - new Date(e.createdAt).getTime();
         if (age > TWENTY_FOUR_HOURS) {
           e.expired = true; // Mark for cleanup

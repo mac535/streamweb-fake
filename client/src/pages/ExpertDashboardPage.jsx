@@ -73,6 +73,7 @@ export default function ExpertDashboardPage() {
 
   const [selectedDraft, setSelectedDraft] = useState(null);
   const [drafts, setDrafts] = useState([]);
+  const [globalDrafts, setGlobalDrafts] = useState([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [eventStats, setEventStats] = useState({
     totalReported: 0,
@@ -95,6 +96,19 @@ export default function ExpertDashboardPage() {
     }, 300);
   };
 
+  const fetchGlobalDrafts = useCallback(async () => {
+    try {
+      const res = await api.get('/events/drafts');
+      setGlobalDrafts(res.data);
+    } catch (err) {
+      console.error("Failed to load global drafts", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchGlobalDrafts();
+  }, [fetchGlobalDrafts]);
+
   const fetchStatsAndDrafts = useCallback(async (code) => {
     try {
       const statsRes = await api.get(`/events/stats?brcCode=${code}`);
@@ -102,10 +116,12 @@ export default function ExpertDashboardPage() {
 
       const draftsRes = await api.get(`/events/drafts?brcCode=${code}`);
       setDrafts(draftsRes.data);
+      
+      fetchGlobalDrafts();
     } catch (err) {
       console.error("Failed to load stats or drafts", err);
     }
-  }, []);
+  }, [fetchGlobalDrafts]);
 
   const handleDeleteDraft = async (e, id) => {
     e.stopPropagation();
@@ -450,7 +466,16 @@ export default function ExpertDashboardPage() {
                     <div className="mt-8 border-t border-outline/10 pt-6">
                       <p className="text-secondary text-sm mb-4">Did you conduct a session at a BRC not assigned to you?</p>
                       <button 
-                        onClick={() => setShowOtherBrcModal(true)}
+                        onClick={() => {
+                          if (globalDrafts.length > 0) {
+                            const d = globalDrafts[0];
+                            const brc = brcData.find(b => b.code === d.brcCode);
+                            const loc = brc ? `${brc.location}/${brc.name}` : d.brcCode;
+                            alert(`A draft report already exists in the app (${loc})! Please resume or delete it.`);
+                            return;
+                          }
+                          setShowOtherBrcModal(true);
+                        }}
                         className="bg-amber-100 text-amber-800 hover:bg-amber-200 px-5 py-3 rounded-xl font-bold text-sm shadow-sm transition-colors border border-amber-300 flex items-center gap-2 w-fit"
                       >
                         <span className="material-symbols-outlined text-[18px]">add_circle</span>
@@ -572,9 +597,12 @@ export default function ExpertDashboardPage() {
                         ref={(el) => (cardRef.current[idx] = el)}
                         onClick={() => {
                           if (tool.title === "Attendance Tools") {
-                            if (drafts.length > 0) {
+                            if (globalDrafts.length > 0) {
+                              const d = globalDrafts[0];
+                              const brc = brcData.find(b => b.code === d.brcCode);
+                              const loc = brc ? `${brc.location}/${brc.name}` : d.brcCode;
                               alert(
-                                "A draft report already exists for this session! Please resume or delete it from the Session Logs tab.",
+                                `A draft report already exists in the app (${loc})! Please resume or delete it.`,
                               );
                               return;
                             }
