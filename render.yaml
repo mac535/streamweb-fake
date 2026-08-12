@@ -25,6 +25,16 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://streamhub-app-api.onrender.com/api
+    headers:
+      - path: /sw.js
+        name: Service-Worker-Allowed
+        value: /
+      - path: /sw.js
+        name: Content-Type
+        value: application/javascript
+      - path: /manifest.json
+        name: Content-Type
+        value: application/json
     routes:
       - type: rewrite
         source: /*
