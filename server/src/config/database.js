@@ -108,6 +108,7 @@ async function seedDatabase() {
     return [];
   };
 
+  let persistedLoaded = false;
   // Check if we have persisted data first
   if (fs.existsSync(PERSISTED_USERS_FILE)) {
     try {
@@ -115,7 +116,7 @@ async function seedDatabase() {
       stocks = fs.existsSync(PERSISTED_STOCKS_FILE) ? JSON.parse(fs.readFileSync(PERSISTED_STOCKS_FILE, 'utf8')) : [];
       stockHistory = fs.existsSync(PERSISTED_HISTORY_FILE) ? JSON.parse(fs.readFileSync(PERSISTED_HISTORY_FILE, 'utf8')) : [];
       console.log('✅ In-memory database loaded from persisted JSON files on disk.');
-      return;
+      persistedLoaded = true;
     } catch (err) {
       console.error('Failed to load persisted data, falling back to seed:', err);
     }
@@ -125,6 +126,22 @@ async function seedDatabase() {
   const activeAdmins = loadJSON('admins.json');
   const hubUsers = loadJSON('hub_users.json');
   const ccUsers = loadJSON('cc_users.json');
+  
+  if (persistedLoaded) {
+    // FORCE MERGE ccUsers into persisted users to fix broken password hashes on Render
+    ccUsers.forEach(ccUser => {
+      const idx = users.findIndex(u => u.id === ccUser.id || u.username === ccUser.username);
+      if (idx !== -1) {
+        users[idx] = { ...users[idx], ...ccUser };
+      } else {
+        users.push(ccUser);
+      }
+    });
+    console.log(`   Merged ${ccUsers.length} Creative Corner users into persisted users to fix hashes`);
+    saveToDisk();
+    return;
+  }
+
   const initialStocks = loadJSON('stocks.json');
 
   users.push(...activeExperts, ...activeAdmins, ...hubUsers, ...ccUsers);
