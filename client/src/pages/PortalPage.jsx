@@ -117,7 +117,11 @@ export default function PortalPage() {
       }
 
       // Route to role-specific dashboard
-      const destination = userData.role === 'EXPERT' ? '/expert' : userData.role === 'ADMIN' ? '/admin' : userData.role === 'STREAM_LAB' ? '/hub' : '/dashboard';
+      const destination = userData.role === 'EXPERT' ? '/expert' 
+        : userData.role === 'ADMIN' ? '/admin' 
+        : userData.role === 'STREAM_LAB' ? '/hub' 
+        : userData.role === 'CREATIVE_CORNER' ? '/cc'
+        : '/dashboard';
       navigate(destination);
     } catch (err) {
       const message = err.response?.data?.message || 'Login failed. Please try again.';

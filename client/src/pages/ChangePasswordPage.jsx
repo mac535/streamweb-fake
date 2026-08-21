@@ -42,7 +42,11 @@ export default function ChangePasswordPage() {
     try {
       await api.put('/auth/change-password', { currentPassword, newPassword });
       // Navigate to dashboard after successful password change
-      const destination = user?.role === 'EXPERT' ? '/expert' : user?.role === 'ADMIN' ? '/admin' : user?.role === 'STREAM_LAB' ? '/hub' : '/dashboard';
+      const destination = user?.role === 'EXPERT' ? '/expert' 
+        : user?.role === 'ADMIN' ? '/admin' 
+        : user?.role === 'STREAM_LAB' ? '/hub' 
+        : user?.role === 'CREATIVE_CORNER' ? '/cc'
+        : '/dashboard';
       navigate(destination, { replace: true });
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to change password. Please try again.';

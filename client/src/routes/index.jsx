@@ -14,6 +14,7 @@ import ResetPasswordPage from '../pages/ResetPasswordPage';
 import ChangePasswordPage from '../pages/ChangePasswordPage';
 import ProfilePage from '../pages/ProfilePage';
 import PublicFormPage from '../pages/PublicFormPage';
+import CcDashboardPage from '../pages/CcDashboardPage';
 
 const RootLayout = () => (
   <>
@@ -89,6 +90,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['STREAM_LAB']}>
             <HubDashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/cc',
+        element: (
+          <ProtectedRoute allowedRoles={['CREATIVE_CORNER']}>
+            <CcDashboardPage />
           </ProtectedRoute>
         ),
       },

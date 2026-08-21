@@ -152,10 +152,24 @@ async function seedDatabase() {
           district: b.district
         }));
         stocks.push(...seededStocks);
-
-        // Removed manual seeding of stockHistory so baseline items aren't treated as 'updated' in June.
       });
     }
+  }
+
+  const ccStocksBase = loadJSON('cc_stocks_base.json');
+  if (ccStocksBase && ccStocksBase.length > 0 && ccUsers && ccUsers.length > 0) {
+    console.log(`   Seeding ${ccStocksBase.length} stock items for each of the ${ccUsers.length} Creative Corners...`);
+    ccUsers.forEach(cc => {
+      const seededCcStocks = ccStocksBase.map(s => ({
+        id: generateId(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...s,
+        brc: cc.brcCode,
+        district: cc.district
+      }));
+      stocks.push(...seededCcStocks);
+    });
   }
 
   saveToDisk(); // Save the initial seed to disk
