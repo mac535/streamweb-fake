@@ -11,6 +11,7 @@ import ExpertManagementPage from '../pages/admin/ExpertManagementPage';
 import ReportsPage from '../pages/admin/ReportsPage';
 import ExpertOnboardingPage from '../pages/ExpertOnboardingPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
+import ChangePasswordPage from '../pages/ChangePasswordPage';
 import ProfilePage from '../pages/ProfilePage';
 import PublicFormPage from '../pages/PublicFormPage';
 
@@ -122,6 +123,14 @@ const router = createBrowserRouter([
       {
         path: '/reset-password/:token',
         element: <ResetPasswordPage />
+      },
+      {
+        path: '/change-password',
+        element: (
+          <ProtectedRoute>
+            <ChangePasswordPage />
+          </ProtectedRoute>
+        )
       },
       {
         path: '*',

@@ -53,14 +53,14 @@ export function AuthProvider({ children }) {
 
   const login = async (identifier, password) => {
     const response = await api.post('/auth/login', { identifier, password });
-    const { token: newToken, user: userData } = response.data.data;
+    const { token: newToken, user: userData, mustChangePassword } = response.data.data;
 
     localStorage.setItem('stream_token', newToken);
     localStorage.setItem('stream_user', JSON.stringify(userData));
     setToken(newToken);
     setUser(userData);
 
-    return userData;
+    return { ...userData, mustChangePassword };
   };
 
   const logout = () => {

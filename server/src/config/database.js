@@ -92,19 +92,6 @@ async function seedDatabase() {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
-    {
-      id: 'mock-creative',
-      email: 'creative@stream.edu',
-      username: 'creative_demo',
-      password: demoPassword,
-      name: 'Creative Corner Lead',
-      role: 'CREATIVE_CORNER',
-      avatar: null,
-      isActive: true,
-      lastLoginAt: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
   ];
 
   // Load dynamically onboarded experts and admins from JSON
@@ -137,9 +124,11 @@ async function seedDatabase() {
   const activeExperts = loadJSON('experts.json');
   const activeAdmins = loadJSON('admins.json');
   const hubUsers = loadJSON('hub_users.json');
+  const ccUsers = loadJSON('cc_users.json');
   const initialStocks = loadJSON('stocks.json');
 
-  users.push(...activeExperts, ...activeAdmins, ...hubUsers);
+  users.push(...activeExperts, ...activeAdmins, ...hubUsers, ...ccUsers);
+  console.log(`   Loaded ${ccUsers.length} Creative Corner users from cc_users.json`);
   const allBrcs = loadJSON('brcs.json');
 
   if (initialStocks && initialStocks.length > 0) {

@@ -42,7 +42,7 @@ async function login(identifier, password) {
 
   // Return user without password
   const { password: _, ...userWithoutPassword } = user;
-  return { user: userWithoutPassword, token };
+  return { user: userWithoutPassword, token, mustChangePassword: !!user.mustChangePassword };
 }
 
 /**
@@ -235,4 +235,82 @@ async function resetPassword(token, newPassword) {
   return true;
 }
 
-module.exports = { login, register, getProfile, updateProfile, forgotPassword, resetPassword };
+/**
+ * Change password (used for first-login forced change and voluntary changes).
+ * @param {string} userId
+ * @param {string} currentPassword
+ * @param {string} newPassword
+ * @returns {boolean}
+ */
+async function changePassword(userId, currentPassword, newPassword) {
+  const user = db.users.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw Object.assign(new Error('User not found.'), { statusCode: 404 });
+  }
+
+  const isPasswordValid = await comparePassword(currentPassword, user.password);
+  if (!isPasswordValid) {
+    throw Object.assign(new Error('Current password is incorrect.'), { statusCode: 401 });
+  }
+
+  const hashedPassword = await hashPassword(newPassword);
+
+  db.users.update({
+    where: { id: userId },
+    data: {
+      password: hashedPassword,
+      mustChangePassword: false,
+    },
+  });
+
+  // Persist to cc_users.json if this is a Creative Corner user
+  const fs = require('fs');
+  const path = require('path');
+  const dataDir = path.join(__dirname, '../../../data');
+
+  if (user.role === 'CREATIVE_CORNER') {
+    const filePath = path.join(dataDir, 'cc_users.json');
+    if (fs.existsSync(filePath)) {
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      const index = data.findIndex(u => u.id === userId);
+      if (index !== -1) {
+        data[index].password = hashedPassword;
+        data[index].mustChangePassword = false;
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+      }
+    }
+  } else if (user.role === 'STREAM_LAB') {
+    const filePath = path.join(dataDir, 'hub_users.json');
+    if (fs.existsSync(filePath)) {
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      const index = data.findIndex(u => u.id === userId);
+      if (index !== -1) {
+        data[index].password = hashedPassword;
+        data[index].mustChangePassword = false;
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+      }
+    }
+  } else {
+    // For experts/admins, persist to the appropriate JSON
+    let fileName = null;
+    if (user.role === 'EXPERT') fileName = 'experts.json';
+    else if (user.role === 'ADMIN' || user.role === 'MAIN_ADMIN') fileName = 'admins.json';
+
+    if (fileName) {
+      const filePath = path.join(dataDir, fileName);
+      if (fs.existsSync(filePath)) {
+        const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        const index = data.findIndex(u => u.id === userId);
+        if (index !== -1) {
+          data[index].password = hashedPassword;
+          data[index].mustChangePassword = false;
+          fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+module.exports = { login, register, getProfile, updateProfile, forgotPassword, resetPassword, changePassword };

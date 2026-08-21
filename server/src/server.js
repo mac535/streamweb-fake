@@ -44,7 +44,7 @@ async function startServer() {
       console.log('  STREAM Expert   → expert@stream.edu / Demo@123');
       console.log('  STREAM Hub      → lab@stream.edu / Demo@123');
       console.log('  iLab Corner     → ilab@stream.edu / Demo@123');
-      console.log('  Creative Corner → creative@stream.edu / Demo@123');
+      console.log('  Creative Corner → [UDISE+CC code] / Stream@CC2026');
       console.log('');
     });
   } catch (error) {

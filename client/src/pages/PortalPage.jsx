@@ -13,7 +13,7 @@ const PORTALS = [
   { role: 'EXPERT', label: 'STREAM Expert', icon: 'school', defaultEmail: 'rio7roy@gmail.com', defaultPassword: '123rio' },
   { role: 'STREAM_LAB', label: 'STREAM Hub', icon: 'biotech', defaultEmail: '', defaultPassword: '', isHub: true },
   { role: 'ILAB', label: 'iLab Corner', icon: 'computer', defaultEmail: 'ilab@stream.edu', defaultPassword: 'Demo@123' },
-  { role: 'CREATIVE_CORNER', label: 'Creative Corner', icon: 'auto_awesome', defaultEmail: 'creative_corners@stream.edu', defaultPassword: 'Demo@123' },
+  { role: 'CREATIVE_CORNER', label: 'Creative Corner', icon: 'auto_awesome', defaultEmail: '', defaultPassword: '', isCreativeCorner: true },
 ];
 
 export default function PortalPage() {
@@ -51,9 +51,10 @@ export default function PortalPage() {
       setPassword(savedPwd);
       setRememberMe(true);
     } else {
-      if (portal.isHub) {
-        const savedHubCode = localStorage.getItem('stream_hub_code') || '';
-        setIdentifier(savedHubCode);
+      if (portal.isHub || portal.isCreativeCorner) {
+        const storageKey = portal.isHub ? 'stream_hub_code' : 'stream_cc_code';
+        const savedCode = localStorage.getItem(storageKey) || '';
+        setIdentifier(savedCode);
         setPassword('');
       } else {
         setIdentifier(portal.defaultEmail || '');
@@ -101,9 +102,18 @@ export default function PortalPage() {
         localStorage.removeItem(`stream_login_${selectedPortal.role}_pwd`);
       }
 
-      // Save hub code for auto-fill on next login (legacy support)
+      // Save code for auto-fill on next login
       if (selectedPortal?.isHub) {
         localStorage.setItem('stream_hub_code', identifier);
+      }
+      if (selectedPortal?.isCreativeCorner) {
+        localStorage.setItem('stream_cc_code', identifier);
+      }
+
+      // If user must change password on first login, redirect to change-password page
+      if (userData.mustChangePassword) {
+        navigate('/change-password');
+        return;
       }
 
       // Route to role-specific dashboard
@@ -275,10 +285,10 @@ export default function PortalPage() {
           <form className="space-y-6" onSubmit={handleLogin}>
             <Input
               id="login-identifier"
-              label={selectedPortal?.isHub ? 'Hub Code' : 'Username / Email'}
+              label={(selectedPortal?.isHub || selectedPortal?.isCreativeCorner) ? 'School Code' : 'Username / Email'}
               type="text"
-              icon={selectedPortal?.isHub ? 'tag' : 'alternate_email'}
-              placeholder={selectedPortal?.isHub ? 'Enter your BRC Hub Code' : 'Enter your unique ID'}
+              icon={(selectedPortal?.isHub || selectedPortal?.isCreativeCorner) ? 'tag' : 'alternate_email'}
+              placeholder={(selectedPortal?.isHub) ? 'Enter your BRC Hub Code' : selectedPortal?.isCreativeCorner ? 'Enter your UDISE+CC Code' : 'Enter your unique ID'}
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               autoFocus
